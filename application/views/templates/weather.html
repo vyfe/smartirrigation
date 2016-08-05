@@ -1,0 +1,99 @@
+<?php $this->load->view("templates/public/header.html");?>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        天气预报下载
+    </div>
+    <div class="alert alert-success" role="alert">
+        <url>
+            <li>
+                以前的数据较旧,很可能有误差,数值100的代表空,数值是0的可能是空也可能就是0
+            </li>
+            <li>
+                以下的数据为多个源整合的结果,也是全量数据,若缺失代表的就是缺失,无法找到
+            </li>
+        </url>
+    </div>
+    <div class="row" style="margin-top: 10px;margin-left: 5px;">
+        <div class="col-lg-3">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">城市名</button>
+                </span>
+                <input type="text" class="form-control search" name="city_name" value="<?=$_GET['city_name']?>" placeholder="城市名">
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">起始日期</button>
+                </span>
+                <input class="form-control search" name="begin_day" type="text" value="<?=$_GET['begin_day']?>" onClick="WdatePicker()"/>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">终止日期</button>
+                </span>
+                <input class="form-control search" name="end_day" type="text" value="<?=$_GET['end_day']?>" onClick="WdatePicker()"/>
+            </div>
+        </div>
+        <div class="col-lg-1">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" id="search">查询</button>
+                </span>
+
+            </div>
+        </div>
+        <div class="col-lg-1">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <button class="btn btn-success" id="export">导出</button>
+                </span>
+
+            </div>
+        </div>
+    </div>
+    <!-- /.panel-heading -->
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>城市</th>
+                    <th>当天低温</th>
+                    <th>高温</th>
+                    <th>天气</th>
+                    <th>第八天低温</th>
+                    <th>高温</th>
+                    <th>天气</th>
+                </tr>
+                </thead>
+                <tbody>
+               <?php foreach($list as $key=>$value):?>
+                    <tr>
+                        <td><?=$value['time']?></td>
+                        <td><?=$value['city_name']?></td>
+                        <td><?=$value['low_temp1']?></td>
+                        <td><?=$value['high_temp1']?></td>
+                        <td><?=$value['weather1']?></td>
+                        <td><?=$value['low_temp8']?></td>
+                        <td><?=$value['high_temp8']?></td>
+                        <td><?=$value['weather8']?></td>
+                    </tr>
+               <?php endforeach;?>
+
+                </tbody>
+            </table>
+        </div>
+        <!-- /.table-responsive -->
+        <div class="page">
+            <?=$page_list?>
+        </div>
+
+    </div>
+</div>
+<?php $this->load->view("templates/public/footer.html");?>
+<script src="<?php echo base_url('public/js/download_weather.js') ?>"></script>

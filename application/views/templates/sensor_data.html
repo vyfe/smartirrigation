@@ -1,0 +1,105 @@
+<?php $this->load->view("templates/public/header.html");?>
+<style type="text/css">
+    #select-section {
+        margin-bottom: 10px;
+    }
+    .plot{
+        width: 100%;
+        height: 500px;
+    }
+    .plot-title{
+        text-align: center;
+        padding: 10px;
+        font-size: 18px;
+    }
+    .row .col-lg-4{
+        margin-bottom: 10px;
+    }
+
+</style>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        传感器数据显示
+    </div>
+    <div class="panel-body">
+        <div class="row" id="select-section">
+            <div class="col-lg-3">
+                <div class="input-group">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">起始日期</button>
+                </span>
+                    <input class="form-control search" name="begin_time" type="text"
+                           value="<?php echo date('Y-m-d',time()-24*3600*7) ?>"
+                           onClick="WdatePicker({skin:'blue',onpicked:changeDate})"/>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="input-group">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">终止日期</button>
+                </span>
+                    <input class="form-control search" name="end_time" type="text"
+                           value="<?php echo date('Y-m-d',time()) ?>"
+                           onClick="WdatePicker({skin:'blue',onpicked:changeDate})"/>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="input-group">
+                <span class="input-group-btn">
+                    <button class="btn btn-default"   type="button"> 设备号
+                    </button>
+                </span>
+                    <select class="form-control search" name="device_id">
+                        <?php foreach($data as $key=> $value):?>
+                        <option value="<?=$value['device_id']?>"><?=$value['device_id']?></option>
+                        <?php endforeach;?>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div id="plot" class="plot">
+
+            </div>
+        </div>
+
+
+
+    </div>
+
+</div>
+<script type="text/javascript">
+    var searchParam=new Object();
+
+    function changeDate() {
+        renderPlot();
+    }
+    $(".search").change(function () {
+        renderPlot();
+    })
+    function getSearchParam() {
+        $(".search").each(function () {
+            name=$(this).attr("name")
+            searchParam[name]=$(this).val()
+        })
+
+    }
+    function callback(data) {
+        if(data.errno==0){
+            var plot_data=data.data.plot
+            var myChart = echarts.init(document.getElementById("plot"));
+            myChart.setOption(plot_data);
+        }
+
+    }
+    kit=new Kit();
+    function renderPlot() {
+        getSearchParam();
+        console.log(searchParam)
+        kit.query("/device/get_sensor_data",searchParam,callback);
+
+    }
+    renderPlot();
+
+</script>
+<?php $this->load->view("templates/public/footer.html");?>

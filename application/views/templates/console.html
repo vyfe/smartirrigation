@@ -1,0 +1,109 @@
+<?php $this->load->view("templates/public/header.html");?>
+<?php $this->load->view("templates/public/console_header.html");?>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        设备列表
+    </div>
+    <!-- /.panel-heading -->
+    <div class="panel-body">
+        <div class="row">
+            <div class="alert alert-success" role="alert">
+                <url>
+                    <li>
+                        开关状态按照设备定义的顺序排列,第一个状态显示开,表示该设备第一个开关处于开的状态
+                    </li>
+                    <li>
+                        点击设备状态按钮,可以控制设备开关,例如当前状态为关,点一下是开
+                    </li>
+                </url>
+            </div>
+        </div>
+        <div class="row">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>设备号</th>
+                    <th>设备名</th>
+                    <th>设备类型</th>
+                    <th>更新时间</th>
+                    <th>网络</th>
+                    <th>操作</th>
+                    <th>管理</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach($deviceData as $row):?>
+                <tr>
+                    <td><?=$row['device_id']?></td>
+                    <td><?=$row['device_name']?></td>
+                    <td><?php echo System_Config::$deviceTypeDesc[$row['device_type']];?></td>
+                    <td  device-id="<?=$row['device_id']?>" class="update-time">
+                        <?php if($row['update_time']):?>
+                        <?php echo date("Y-m-d H:i:s",$row['update_time'])?>
+                        <?php else:?>
+                        未上线
+                        <?php endif;?>
+
+                    </td>
+                    <td>
+                        <button type="button"
+                                device-id="<?=$row['device_id']?>"
+                                class="net-status btn btn-outline <?php echo  System_Config::$deviceNetStatusButtonClass[$row['net_status']]?>"><?php echo System_Config::$deviceNetStatusDesc[$row['net_status']] ?></button>
+                    </td>
+                    <td>
+                        <!-- Single button -->
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">
+                                操作 <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <?php foreach($commandData[$row['device_id']] as $command):?>
+                                <li><a href="#" class="command" sign="<?=$row['sign']?>"
+                                       device-id="<?=$row['device_id']?>"
+                                       command-id="<?=$command['command_id']?>"><?=$command['command_name']?></a></li>
+                                <li role="separator" class="divider"></li>
+                                <?php endforeach;?>
+
+                            </ul>
+                        </div>
+                    </td>
+                    <td><button type="button" class="btn-primary btn">管理</button></td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <button type="button" class="btn btn-info">设备目前状态</button>
+                        <?php foreach(json_decode($row['relay_value']) as $k=>$v):?>
+                        <?php if($v):?>
+                        <button type="button" order ="<?=$k?>" device-id="<?=$row['device_id']?>" value="1" class="btn btn-warning relay" sign="<?=$row['sign']?>" >开</button>
+                        <?php else:?>
+                        <button type="button" order ="<?=$k?>"   value="0" device-id="<?=$row['device_id']?>"  class="btn btn-info relay" sign="<?=$row['sign']?>">关</button>
+                        <?php endif;?>
+                        <?php endforeach;?>
+
+                        </button>
+
+                    </td>
+                    <td colspan="3">
+                        <button type="button" class="btn btn-info">传感器数据</button>
+                        <?php foreach(json_decode($row['editor_value']) as $k=>$v):?>
+                        <button type="button"   device-id="<?=$row['device_id']?>" order="<?=$k?>"
+                                class="btn btn-primary sensor-value"><?=$v?></button>
+                        <?php endforeach;?>
+                    </td>
+
+                </tr>
+                <?php endforeach;?>
+                </tbody>
+            </table>
+
+        </div>
+
+
+
+    </div>
+    <!-- /.panel-body -->
+</div>
+<?php $this->load->view("templates/public/footer.html");?>
+<script src="<?php echo base_url('public/js/Kit.js') ?>"></script>
+<script src="<?php echo base_url('public/js/console.js') ?>"></script>

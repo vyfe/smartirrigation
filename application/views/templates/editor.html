@@ -1,0 +1,108 @@
+<?php $this->load->view("templates/public/header.html");?>
+<style type="text/css">
+    #form{
+        width: 90%;
+        margin: 20px auto;
+        border: 1px solid lavender;
+        padding: 10px;
+    }
+    .legend{
+        text-align: center;
+    }
+    .form-group label{
+        display: block;
+        margin-left: 10px;
+        font-size: 15px;
+
+    }
+    .form-group button{
+        display: block;
+        width: 100px;
+        margin: auto;
+
+    }
+
+</style>
+<div class="panel panel-default" xmlns="http://www.w3.org/1999/html">
+    <div class="panel-heading">
+        <?=$data['device_id']?>设备修改
+    </div>
+    <div class="panel-body">
+        <div class="row" style="margin-bottom: 10px;">
+            <div class="col-lg-5" style="margin-left: 30%;">
+                <div class="input-group">
+                <span class="input-group-btn ">
+                    <button class="btn btn-default "  style="width: 100px; margin-right: 10px;"  type="button"> 设备号
+                    </button>
+                </span>
+                    <select class="form-control search" name="device_id">
+                        <?php foreach($deviceInfo as $key=> $value):?>
+                        <option value="<?=$value['device_id']?>"
+                        <?php if($value['device_id']==$data['device_id']){echo "selected";}?>>
+                        <?=$value['device_id']?></option>
+                        <?php endforeach;?>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+        <div id="form">
+            <?php echo form_open("device/do_editor")?>
+            <fieldset >
+                <legend class="legend">设备修改项</legend>
+                <div class="form-group">
+                    <label for="device_name">设备名</label>
+                    <input type="text" class="form-control" id="device_name"   name="device_name"
+                           value="<?=$data['device_name']; ?>"
+                           placeholder="设备名">
+                </div>
+                <div class="form-group">
+                    <label for="city_name">设备城市</label>
+                    <input type="text" class="form-control" id="city_name"   name="city_name"
+                           value="<?=$data['city_name']; ?>" placeholder="设备城市（不带市/县）">
+                </div>
+                <div class="form-group">
+                    <label for="description">设备描述</label>
+                    <input type="text" class="form-control" id="description" name="description"
+                           value="<?=$data['description']; ?>" placeholder="设备描述">
+                </div>
+                <input type="hidden" class="form-control" id="device-id" name="device_id"
+                       value="<?=$data['device_id']; ?>"  >
+                <div class="form-group">
+                    <label for="device_type">设备类型</label>
+                    <select class="form-control" id="device_type" name="device_type">
+                        <?php foreach(System_config::$deviceTypeDesc as $key=> $value):?>
+                        <option value="<?=$key?>"
+                        <?php if($key==$data['device_type']){echo "selected";} ?>><?=$value?></option>
+                        <?php endforeach;?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="device_template_id">设备所属型号</label>
+                    <select class="form-control" id="device_template_id" name="device_template_id">
+                        <?php foreach($deviceTemplateData as $row):?>
+                        <option value="<?=$row['device_template_id']?>"
+                        <?php if($row['device_template_id']==$data['device_template_id']){echo "selected";} ?>>
+                        <?=$row['name']?></option>
+                        <?php endforeach;?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success">修改</button>
+                </div>
+            </fieldset>
+            </form>
+
+        </div>
+
+    </div>
+</div>
+<script type="text/javascript">
+    $(".search").change(function () {
+        var device_id=$(".search").val();
+        window.location.href="/device/editor?device_id="+device_id
+
+    })
+
+</script>
+<?php $this->load->view("templates/public/footer.html");?>

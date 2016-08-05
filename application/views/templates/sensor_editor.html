@@ -1,0 +1,74 @@
+<?php $this->load->view("templates/public/header.html");?>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        传感器数据修正
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="alert alert-success" role="alert">
+                <url>
+                    <li>
+                        %d代表传感器数据,如果传感器数值100~200 对应湿度0~100 则修正为%d-100
+                    </li>
+                    <li>
+                        如果传感器数据值为20~255 对应土壤水层深度为0~100 则修正为(%d-20)*100/(255-20)
+                    </li>
+                </url>
+            </div>
+        </div>
+
+        <div class="row">
+            <table class=" table table-bordered">
+                <thead>
+                <th>设备号</th>
+                <th>
+                    传感器1修正公式
+                </th>
+                <th>传感器2修正公式</th>
+                <th>传感器3修正公式</th>
+                <th>传感器4修正公式</th>
+                <th>确认修改</th>
+                </thead>
+                <tbody>
+                <?php foreach($data as $row):?>
+                    <tr>
+                        <td><?=$row['device_id']?></td>
+                        <td><input device-id="<?=$row['device_id']?>" type="text"
+                                   value="<?=$row['sensor_editor'][0]?>"></td>
+                        <td><input device-id="<?=$row['device_id']?>" type="text"
+                                   value="<?=$row['sensor_editor'][1]?>"></td>
+                        <td><input device-id="<?=$row['device_id']?>" type="text"
+                                   value="<?=$row['sensor_editor'][2]?>"></td>
+                        <td><input device-id="<?=$row['device_id']?>" type="text"
+                                   value="<?=$row['sensor_editor'][3]?>"></td>
+                        <td><button class="btn-success editor" device-id="<?=$row['device_id']?>">确认修改</button></td>
+                    </tr>
+                <?php endforeach;?>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+</div>
+<script type="text/javascript">
+    $(".editor").click(function () {
+        var param=new Object();
+        var device_id=$(this).attr("device-id");
+        param['device_id']=device_id;
+        param['sensor_editor']=new Array();
+        $("input[device-id="+device_id+"]").each(function () {
+            param['sensor_editor'].push($(this).val())
+        })
+        var kit =new Kit();
+        kit.query("/device/do_sensor_editor",param,callback)
+
+    })
+    function callback(data) {
+        alert(data.msg);
+        window.location.reload();
+
+    }
+
+</script>
+<?php $this->load->view("templates/public/footer.html");?>
