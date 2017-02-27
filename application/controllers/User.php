@@ -1,5 +1,4 @@
 <?php
-/*123*/
 /**
  * @Copyright (c) 2016 Rd.Lanjinger.com. All Rights Reserved.
  * @author          lvxinwei <lvxinwei@lvxinwei.com>
