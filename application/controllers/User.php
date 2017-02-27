@@ -1,5 +1,5 @@
 <?php
-
+/*123*/
 /**
  * @Copyright (c) 2016 Rd.Lanjinger.com. All Rights Reserved.
  * @author          lvxinwei <lvxinwei@lvxinwei.com>
@@ -14,6 +14,9 @@ class User extends CI_Controller {
 
     public function login() {
         $this->load->view("templates/login.html");
+    }
+    public function Syslogin() {
+        $this->load->view("templates/Syslogin.html");
     }
 
     public function postLogin() {
