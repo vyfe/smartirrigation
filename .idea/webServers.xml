@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="8a903382-5850-46a8-8689-e0f63dbc33df" name="smart" url="http://www.smartirrigation.org">
+        <fileTransfer host="www.smartirrigation.org" port="22" accessType="SFTP" password="dfe9dfc2dfcfdfc4dfd3dfc3dfccdfcfdfc3df8bdf8bdf8bdf8b" username="chenyifei">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
