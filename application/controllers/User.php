@@ -109,6 +109,7 @@ class User extends CI_Controller {
             $insertData['email'] = $_POST['email'];
             $insertData['password'] = md5(trim($_POST['password']));
             $insertData['add_time'] = time();
+            $insertData['access'] = $_POST['access'];//插入的是是否有权限
             $ret = $this->db->insert("user", $insertData);
             if ($ret) {
                 redirect("/user/login");
