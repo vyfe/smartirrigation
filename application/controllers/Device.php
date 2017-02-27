@@ -203,6 +203,7 @@ class Device extends MY_Controller{
             $item['irrigation_min']=json_decode($item['irrigation_min'],true);
             $item['irrigation_type']=json_decode($item['irrigation_type'],true);
             $item['irrigation_on']=json_decode($item['irrigation_on'],true);
+            $item['irrigation_unit']=json_decode($item['irrigation_unit'],true);
         }
         $ret['data']=$deviceData[0];
         $where = array('user_id' => $_SESSION['user_info']['user_id']);
@@ -220,6 +221,7 @@ class Device extends MY_Controller{
         $irrigationType=(int)$_POST['irrigation_type'];
         $irrigationMin=(int)$_POST['irrigation_min'];
         $irrigationMax=(int)$_POST['irrigation_max'];
+        $irrigationUnit=(int)$_POST['irrigation_unit'];
         if($deviceId<=0||$sensorId<=0){
             $ret['error_code']=1;
             $ret['msg']='修改失败';
@@ -235,12 +237,15 @@ class Device extends MY_Controller{
             $deviceData['irrigation_min']=json_decode($deviceData['irrigation_min'],true);
             $deviceData['irrigation_type']=json_decode($deviceData['irrigation_type'],true);
             $deviceData['irrigation_on']=json_decode($deviceData['irrigation_on'],true);
+            $deviceData['irrigation_unit']=json_decode($deviceData['irrigation_unit'],true);
             $deviceData['irrigation_max'][$sensorId-1]=$irrigationMax;
             $deviceData['irrigation_min'][$sensorId-1]=$irrigationMin;
+            $deviceData['irrigation_unit'][$sensorId-1]=$irrigationUnit;
             $deviceData['irrigation_type'][$sensorId-1]=$irrigationType;
             $deviceData['irrigation_on'][$sensorId-1]=$irrigationOn;
             $deviceData['irrigation_max']=json_encode($deviceData['irrigation_max'],true);
             $deviceData['irrigation_min']=json_encode($deviceData['irrigation_min'],true);
+            $deviceData['irrigation_unit']=json_encode($deviceData['irrigation_unit'],true);
             $deviceData['irrigation_type']=json_encode($deviceData['irrigation_type'],true);
             $deviceData['irrigation_on']=json_encode($deviceData['irrigation_on'],true);
             $where = array('user_id' => $_SESSION['user_info']['user_id']);

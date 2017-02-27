@@ -8,7 +8,7 @@
             <div class="col-lg-5">
                 <div class="input-group">
                 <span class="input-group-btn ">
-                    <button class="btn btn-default "  style="width: 100px; margin-right: 10px;"  type="button"> 设备号
+                    <button class="btn btn-default " style="width: 100px; margin-right: 10px;" type="button"> 设备号
                     </button>
                 </span>
                     <select class="form-control search" name="device_id">
@@ -35,7 +35,10 @@
                     传感器灌溉下限
                 </th>
                 <th>
-                    传感器灌溉上限
+                    对应作物
+                </th>
+                <th>
+                    灌溉单位(秒计)
                 </th>
 
                 <th>
@@ -56,33 +59,45 @@
                     <td><?=$data['device_id']?></td>
                     <td>第<?=$i+1?>传感器</td>
 
-                        <td><input  type="text" name="irrigation_min" class="data"
-                                   value="<?=$data['irrigation_min'][$i]?>"></td>
-                        <td><input   type="text" name="irrigation_max" class="data"
-                                   value="<?=$data['irrigation_max'][$i]?>"></td>
-                        <td>
-                            <select  name="irrigation_type" class="data">
-                                <?php foreach($irrigationType as $key=>$value):?>
-                                <option value="<?=$key?>"
-                                <?php if($key==$data['irrigation_type'][$i]){echo "selected";}?>><?=$value?></option>
-                                <?php endforeach;?>
-                            </select>
-                        </td>
-                        <td>
-                            <select  name="irrigation_on" class="data">
-                                <option value="1"
-                                <?php if(1==$data['irrigation_on'][$i]){echo "selected";}?>>开
+                    <td><input type="text" name="irrigation_min" class="data"
+                               value="<?=$data['irrigation_min'][$i]?>"></td>
+                    <td>
+                        <select name = "plant_id" class="data" style="width: 80px; margin-right: 10px">
+                            <option value="0" >无计划</option>
+                            <?php foreach($plantinfo as $key =>$value):?>
+                                <option value="<?=$value['plant_id']?>"
+                                <?php if($value['plant_id']==$data['plant_id'][$i]){echo "selected";}?>><?=$value['name']?>
                                 </option>
-                                <option value="0"
-                                <?php if(0==$data['irrigation_on'][$i]){echo "selected";}?>>关
-                                </option>
-                            </select>
-                        </td>
+                            <?php endforeach;?>
+                        </select>
+                    </td>
+                    <td><input type="text" name="irrigation_unit" class="data"
+                               value="<?=$data['irrigation_unit'][$i]?>"></td>
+                    <td>
+                        <select name="irrigation_type" class="data">
+                            <?php foreach($irrigationType as $key=>$value):?>
+                            <option value="<?=$key?>"
+                            <?php if($key==$data['irrigation_type'][$i]){echo "selected";}?>><?=$value?></option>
+                            <?php endforeach;?>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="irrigation_on" class="data">
+                            <option value="1"
+                            <?php if(1==$data['irrigation_on'][$i]){echo "selected";}?>>开
+                            </option>
+                            <option value="0"
+                            <?php if(0==$data['irrigation_on'][$i]){echo "selected";}?>>关
+                            </option>
+                        </select>
+                    </td>
 
-                    <td><button class="btn-success editor" device-id="<?=$data['device_id']?>"
+                    <td>
+                        <button class="btn-success editor" device-id="<?=$data['device_id']?>"
                                 sensor-id="<?=$i+1?>">确认修改
-                    </button></td>
-                    </tr>
+                        </button>
+                    </td>
+                </tr>
                 <?php endfor;?>
 
                 </tbody>
@@ -94,18 +109,18 @@
 </div>
 <script type="text/javascript">
     $(".editor").click(function () {
-        var param=new Object();
-        var device_id=$(this).attr("device-id");
-        var sensor_id=$(this).attr('sensor-id');
-        param['device_id']=device_id;
-        param['sensor_id']=sensor_id;
-        var row=$("tr[sensor-id="+sensor_id+"]");
+        var param = new Object();
+        var device_id = $(this).attr("device-id");
+        var sensor_id = $(this).attr('sensor-id');
+        param['device_id'] = device_id;
+        param['sensor_id'] = sensor_id;
+        var row = $("tr[sensor-id=" + sensor_id + "]");
         $(row).find(".data").each(function () {
-            var name=$(this).attr("name");
-            param[name]=$(this).val();
+            var name = $(this).attr("name");
+            param[name] = $(this).val();
         })
-        var kit =new Kit();
-        kit.query("/device/irrigation_editor",param,callback)
+        var kit = new Kit();
+        kit.query("/device/irrigation_editor", param, callback)
 
     })
     function callback(data) {
@@ -115,8 +130,8 @@
     }
 
     $(".search").change(function () {
-        var device_id=$(".search").val();
-        window.location.href="/device/irrigation?device_id="+device_id
+        var device_id = $(".search").val();
+        window.location.href = "/device/irrigation?device_id=" + device_id
 
     })
 

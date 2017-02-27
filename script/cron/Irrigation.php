@@ -27,65 +27,86 @@ class Irrigation {
         $this->_httpClient = new HttpClient();
 
     }
-
+	public function judgeweather($data,$startNum,$endNum)
+	//判断指定天数之内是否出现中雨及以上,出现返回1，不出现返回0
+		{
+		$WData = $data;
+		$count = 0;
+		for($i = $startNum;$i < ($endNum + 1);$i++)//针对范围内每一天判断
+			{
+			if(strpos($WData['weather'.$i], '中雨') !== false)
+			{$count++;break;}
+			else if(strpos($WData['weather'.$i], '大雨') !== false)
+			{$count++;break;}
+			else if(strpos($WData['weather'.$i], '暴雨') !== false)
+			{$count++;break;}
+			}
+		if($count == 0)
+		{return 0;}
+		else
+		{return 1;}
+		}
     //策略1
     public function smart1($data, $sensorNum) {
-        echo "begin smart1";
+        echo "begin smart1 \r\n";
         $irrigationMax = $data['irrigation_max'][$sensorNum];
         $irrigationMin = $data['irrigation_min'][$sensorNum];
         $irrigationType = $data['irrigation_type'][$sensorNum];
         $sensorValue = $data['editor_value'][$sensorNum];
         $relayValue = $data['relay_value'][$sensorNum];
+        $irrigationUnit = $data['irrigation_unit'][$sensorNum];
         $weatherData =
             $this->_db->where('city_name', $data['city_name'])->where('time', date("Y-m-d", time() - 24 * 3600))
                 ->getOne
                 ("weather");
         $need = 0;
+        
         if ($weatherData) {
-            //三天内有雨
-            if (strpos($weatherData['weather1'], '雨') !== false || strpos($weatherData['weather2'], '雨') !== false ||
-                strpos
-                ($weatherData['weather3'], '雨') !== false
-            ) {
-                $need=0;
+            //三天内有中雨
+            if ($this->judgeweather($weatherData,1,3))
+            {
+                $need = 0;
 
-            }else if (strpos($weatherData['weather4'], '雨') !== false || strpos($weatherData['weather5'], '雨') !== false
+            } else if ($this->judgeweather($weatherData,4,5)
             ) {
-                //4-5天有雨
-                $need = $irrigationMin + ($irrigationMax - $irrigationMin) / 4;
-            } else if (strpos($weatherData['weather6'], '雨') !== false || strpos($weatherData['weather7'], '雨') !==
-                false
+                //4-5天有中雨
+                $need = $irrigationUnit / 4;
+            } else if ($this->judgeweather($weatherData,6,7)
             ) {
-                $need = $irrigationMin + ($irrigationMax - $irrigationMin) / 2;
+                $need = $irrigationUnit / 2;
             } else {
-                $need=$irrigationMax;
+                $need = $irrigationUnit;
             }
-            echo $data['device_id']."设备 ".($sensorNum+1)."传感器 需要  ".$need."\r\n";
+            echo $data['device_id'] . "设备 " . ($sensorNum + 1) . "传感器 需要  " . $need . "\r\n";
             //继电器开
-            if($relayValue){
-                if($sensorValue>=$need){
-                    $this->send_command($data['device_id'],$data['sign'],'[0,0,0,0]');
-                    echo $data['device_id']."设备 ".$sensorNum."传感器  关闭开关 \r\n";
+            if ($relayValue) {
+                //继电器开,算下上次开时间,到时间没
+				$shiqi = 17;
+			$recentCommand = $this->_db->where("device_id" , $data['device_id'])->where('command_id < 17')->orderBy("id","desc")->getOne
+                ("command_data");
+                $recentSendTime = $recentCommand['add_time'];
+            	echo "上次开启时间".$recentSendTime."\r\n";
+            	echo "目前时间".time()."\r\n";
+                //时间到了
+                if ((time() - $recentSendTime) >= $need) {
+                    $this->send_command($data['device_id'], $data['sign'], '[0,0,0,0]');
+                    echo $data['device_id'] . "设备 传感器".($sensorNum+1)." 关闭开关 \r\n";
                     //移交控制权
                     return false;
                 } else {
-                    //发送获取传感器指令
-                    $this->get_sensor_data($data['device_id'],$data['sign']);
 
-                    //移交控制权
-                    return false;
+                    return true;
                 }
             } else {
-                $command=array(0,0,0,0);
-                $command[$sensorNum]=1;
-                if($need>$sensorValue){
-                    $this->send_command($data['device_id'],$data['sign'],json_encode($command));
+                $command = array(0, 0, 0, 0);
+                $command[$sensorNum] = 1;
+                if ($need > 0) {
+                    echo time().":".$data['device_id'] . "设备  传感器".($sensorNum+1)." 开启开关 \r\n";
+                    $this->send_command($data['device_id'], $data['sign'], json_encode($command));
                     //锁定控制权
                     return true;
                 }
             }
-
-
         } else {
             return false;
         }
@@ -94,53 +115,60 @@ class Irrigation {
     }
 
     //策略2
-    public function smart2($data,$sensorNum) {
-        echo "begin smart2";
+    public function smart2($data, $sensorNum) {
+        echo "begin smart2 \r\n";
         $irrigationMax = $data['irrigation_max'][$sensorNum];
         $irrigationMin = $data['irrigation_min'][$sensorNum];
         $irrigationType = $data['irrigation_type'][$sensorNum];
         $sensorValue = $data['editor_value'][$sensorNum];
         $relayValue = $data['relay_value'][$sensorNum];
+        $irrigationUnit = $data['irrigation_unit'][$sensorNum];
         $weatherData =
             $this->_db->where('city_name', $data['city_name'])->where('time', date("Y-m-d", time() - 24 * 3600))
                 ->getOne
                 ("weather");
         $need = 0;
         if ($weatherData) {
-            //1天内有雨
-            if (strpos($weatherData['weather1'], '雨') !== false) {
-                $need=0;
+            //1天内有中雨
+            if ($this->judgeweather($weatherData,1,1)) {
+                $need = 0;
 
-            }else if (strpos($weatherData['weather2'], '雨') !== false || strpos($weatherData['weather3'], '雨') !== false
+            } else if ($this->judgeweather($weatherData,2,3)
             ) {
-                //4-5天有雨
-                $need = $irrigationMin + ($irrigationMax - $irrigationMin) / 4;
-            } else if (strpos($weatherData['weather4'], '雨') !== false || strpos($weatherData['weather5'], '雨') !==
-                false
+                //4-5天有中雨
+                $need = $irrigationUnit / 4;
+            } else if ($this->judgeweather($weatherData,4,5)
             ) {
-                $need = $irrigationMin + ($irrigationMax - $irrigationMin) / 2;
+                $need = $irrigationUnit / 2;
             } else {
-                $need=$irrigationMax;
+                $need = $irrigationUnit;
             }
-            echo $data['device_id']."设备 ".($sensorNum+1)."传感器 需要  "."\r\n";
+            echo $data['device_id'] . "设备 " . ($sensorNum + 1) . "传感器 需要  " .$need. "\r\n";
             //继电器开
-            if($relayValue){
-                if($sensorValue>=$need){
-                    $this->send_command($data['device_id'],$data['sign'],'[0,0,0,0]');
+            if ($relayValue) {
+                //继电器开,算下上次开时间,到时间没
+                $shiqi = 17;
+				$recentCommand = $this->_db->where("device_id" , $data['device_id'])->where('command_id < 17')->orderBy("id","desc")->getOne
+                ("command_data");
+                $recentSendTime = $recentCommand['add_time'];
+				echo "上次开启时间".$recentSendTime."\r\n";
+				echo "目前时间".time()."\r\n";
+                //时间到了
+                if ((time() - $recentSendTime) >= $need) {
+                    $this->send_command($data['device_id'], $data['sign'], '[0,0,0,0]');
+                    echo $data['device_id'] . "设备  传感器".($sensorNum+1)." 关闭开关 \r\n";
                     //移交控制权
                     return false;
                 } else {
-                    //发送获取传感器指令
-                    $this->get_sensor_data($data['device_id'],$data['sign']);
 
-                    //移交控制权
-                    return false;
+                    return true;
                 }
             } else {
-                $command=array(0,0,0,0);
-                $command[$sensorNum]=1;
-                if($need>$sensorValue){
-                    $this->send_command($data['device_id'],$data['sign'],json_encode($command));
+                $command = array(0, 0, 0, 0);
+                $command[$sensorNum] = 1;
+                if ($need > 0) {
+                    echo time().":".$data['device_id'] . "设备  传感器".($sensorNum+1)." 开启开关 \r\n";
+                    $this->send_command($data['device_id'], $data['sign'], json_encode($command));
                     //锁定控制权
                     return true;
                 }
@@ -155,97 +183,115 @@ class Irrigation {
     }
 
     //策略3
-    public function smart3($data,$sensorNum) {
-        echo "begin smart3";
+    public function smart3($data, $sensorNum) {
+        echo "begin smart3\r\n";
         $irrigationMax = $data['irrigation_max'][$sensorNum];
         $irrigationMin = $data['irrigation_min'][$sensorNum];
         $irrigationType = $data['irrigation_type'][$sensorNum];
         $sensorValue = $data['editor_value'][$sensorNum];
         $relayValue = $data['relay_value'][$sensorNum];
+        $irrigationUnit = $data['irrigation_unit'][$sensorNum];
         $weatherData =
             $this->_db->where('city_name', $data['city_name'])->where('time', date("Y-m-d", time() - 24 * 3600))
                 ->getOne
                 ("weather");
         $need = 0;
         if ($weatherData) {
-            //三天内有雨
-            if (strpos($weatherData['weather1'], '雨') !== false || strpos($weatherData['weather2'], '雨') !== false
+            //两天内有中雨
+            if ($this->judgeweather($weatherData,1,2)
             ) {
-                $need=0;
+                $need = 0;
 
-            }else if (strpos($weatherData['weather3'], '雨') !== false || strpos($weatherData['weather4'], '雨') !== false
+            } else if ($this->judgeweather($weatherData,3,4)
             ) {
-                //4-5天有雨
-                $need = $irrigationMin + ($irrigationMax - $irrigationMin) / 4;
-            } else if (strpos($weatherData['weather5'], '雨') !== false || strpos($weatherData['weather6'], '雨') !==
-                false ||strpos($weatherData['weather7'], '雨') !== false
+                //3-4天有中雨
+                $need = $irrigationUnit / 4;
+            } else if ($this->judgeweather($weatherData,5,7)
             ) {
-                $need = $irrigationMin + ($irrigationMax - $irrigationMin) / 2;
+                $need = $irrigationUnit / 2;
             } else {
-                $need=$irrigationMax;
+                $need = $irrigationUnit;
             }
-            echo $data['device_id']."设备 ".($sensorNum+1)."传感器 需要  ".$need."\r\n";
+            echo $data['device_id'] . "设备 传感器". ($sensorNum + 1)." 需要  " . $need . "\r\n";
             //继电器开
-            if($relayValue){
-                if($sensorValue>=$need){
-                    $this->send_command($data['device_id'],$data['sign'],'[0,0,0,0]');
-                    //移交控制权
-                    return false;
-                } else {
-                    //发送获取传感器指令
-                    $this->get_sensor_data($data['device_id'],$data['sign']);
-
-                    return true;
-                }
+            if ($relayValue) {
+            //继电器开,算下上次开时间,到时间没
+            $shiqi = 17;
+			$recentCommand = $this->_db->where("device_id" , $data['device_id'])->where('command_id < 17')->orderBy("id","desc")->getOne
+                ("command_data");
+            $recentSendTime = $recentCommand['add_time'];
+            echo "上次开启时间".$recentSendTime."\r\n";
+            echo "目前时间".time()."\r\n";
+            //时间到了
+            if ((time() - $recentSendTime) >= $need) {
+                $this->send_command($data['device_id'], $data['sign'], '[0,0,0,0]');
+                echo $data['device_id'] . "设备  传感器".($sensorNum+1)." 关闭开关 \r\n";
+                //移交控制权
+                return false;
             } else {
-                $command=array(0,0,0,0);
-                $command[$sensorNum]=1;
-                if($need>$sensorValue){
-                    $this->send_command($data['device_id'],$data['sign'],json_encode($command));
-                    //锁定控制权
-                    return true;
-                }
+
+                return true;
             }
+        } else {
+            $command = array(0, 0, 0, 0);
+            $command[$sensorNum] = 1;
+            if ($need > 0) {
+                echo time().":".$data['device_id'] . "设备  传感器".($sensorNum+1)." 开启开关 \r\n";
+                $this->send_command($data['device_id'], $data['sign'], json_encode($command));
+                //锁定控制权
+                return true;
+            }
+        }
 
         } else {
             return false;
         }
     }
+
     //策略4
-    public function smart4($data,$sensorNum) {
-        echo "begin smart4";
+    public function smart4($data, $sensorNum) {
+        echo "begin smart4 \r\n";
         $irrigationMax = $data['irrigation_max'][$sensorNum];
         $irrigationMin = $data['irrigation_min'][$sensorNum];
         $irrigationType = $data['irrigation_type'][$sensorNum];
         $sensorValue = $data['editor_value'][$sensorNum];
         $relayValue = $data['relay_value'][$sensorNum];
+        $irrigationUnit = $data['irrigation_unit'][$sensorNum];
         $weatherData =
             $this->_db->where('city_name', $data['city_name'])->where('time', date("Y-m-d", time() - 24 * 3600))
                 ->getOne
                 ("weather");
         if ($sensorValue < $irrigationMin) {
-            $need = $irrigationMax;
+            $need = $irrigationUnit;
         } else {
             return false;
         }
-        echo $data['device_id']."设备 ".($sensorNum+1)."传感器 需要  ".$need."\r\n";
+        echo $data['device_id'] . "设备  传感器".($sensorNum+1)." 需要  " . $need . "\r\n";
         //继电器开
+
         if ($relayValue) {
-            if ($sensorValue >= $need) {
+            //继电器开,算下上次开时间,到时间没
+            $shiqi = 17;
+			$recentCommand = $this->_db->where("device_id" , $data['device_id'])->where('command_id < 17')->orderBy("id","desc")->getOne
+                ("command_data");
+            $recentSendTime = $recentCommand['add_time'];
+            echo "上次开启时间".$recentSendTime."\r\n";
+            echo "目前时间".time()."\r\n";
+            //时间到了
+            if ((time() - $recentSendTime) >= $need) {
                 $this->send_command($data['device_id'], $data['sign'], '[0,0,0,0]');
+                echo $data['device_id'] . "设备  传感器".($sensorNum+1)." 关闭开关 \r\n";
                 //移交控制权
                 return false;
             } else {
-                //发送获取传感器指令
-                $this->get_sensor_data($data['device_id'], $data['sign']);
 
-                //移交控制权
-                return false;
+                return true;
             }
         } else {
             $command = array(0, 0, 0, 0);
             $command[$sensorNum] = 1;
-            if ($need > $sensorValue) {
+            if ($need > 0) {
+                echo time().":".$data['device_id'] . "设备  传感器".($sensorNum+1)." 开启开关 \r\n";
                 $this->send_command($data['device_id'], $data['sign'], json_encode($command));
                 //锁定控制权
                 return true;
@@ -256,55 +302,54 @@ class Irrigation {
 
     public function send_command($deviceId, $sign, $relayStatus) {
 
-            if($relayStatus!='[0,0,0,0]'){
-                //开2007 水泵
-                $ret=$this->_httpClient->sendPostData("http://www.smartirrigation.org/api/send_command",array(
-                    'device_id'=>2007,
-                    'sign'=>'8d9ee8324adbdd79e0e665eb6b6b5e87',
-                    'set_relay_status'=>'[1,0,0,0]',
-                ));
-            } else {
-                //开2007 水泵
-                $ret=$this->_httpClient->sendPostData("http://www.smartirrigation.org/api/send_command",array(
-                    'device_id'=>2007,
-                    'sign'=>'8d9ee8324adbdd79e0e665eb6b6b5e87',
-                    'set_relay_status'=>'[0,0,0,0]',
-                ));
-            }
+        if ($relayStatus != '[0,0,0,0]') {
+            //开2007 水泵
+            $ret = $this->_httpClient->sendPostData("http://www.smartirrigation.org/api/send_command", array(
+                'device_id' => 2007,
+                'sign' => '8d9ee8324adbdd79e0e665eb6b6b5e87',
+                'set_relay_status' => '[1,0,0,0]',
+            ));
+        } else {
+            //关2007 水泵
+            $ret = $this->_httpClient->sendPostData("http://www.smartirrigation.org/api/send_command", array(
+                'device_id' => 2007,
+                'sign' => '8d9ee8324adbdd79e0e665eb6b6b5e87',
+                'set_relay_status' => '[0,0,0,0]',
+            ));
+        }
 
-//
-        $ret=$this->_httpClient->sendPostData("http://www.smartirrigation.org/api/send_command",array(
-            'device_id'=>$deviceId,
-            'sign'=>$sign,
-            'set_relay_status'=>$relayStatus,
+        //
+        $ret = $this->_httpClient->sendPostData("http://www.smartirrigation.org/api/send_command", array(
+            'device_id' => $deviceId,
+            'sign' => $sign,
+            'set_relay_status' => $relayStatus,
         ));
-        return json_decode($ret,true);
+        return json_decode($ret, true);
     }
-    public function get_sensor_data($deviceId,$sign){
-        $ret=$this->_httpClient->sendPostData("http://www.smartirrigation.org/api/send_command",array(
-            'device_id'=>$deviceId,
-            'sign'=>$sign,
-            'command_id'=>17,
+
+    public function get_sensor_data($deviceId, $sign) {
+        $ret = $this->_httpClient->sendPostData("http://www.smartirrigation.org/api/send_command", array(
+            'device_id' => $deviceId,
+            'sign' => $sign,
+            'command_id' => 17,
         ));
-        return json_decode($ret,true);
+        return json_decode($ret, true);
     }
 
 
     public function run() {
-        $data = $this->_db->where("net_status=7")->get("device");
-        $end=0;
+        $data = $this->_db->where("net_status=7")->where("device_id like '200%'")->orderBy('device_id','DESC')->get("device");
+        $end = 0;
         foreach ($data as $row) {
-            if($end){
-                break;
-            }
             $deviceId = $row['device_id'];
             $row['irrigation_max'] = json_decode($row['irrigation_max'], true);
             $row['irrigation_min'] = json_decode($row['irrigation_min'], true);
+            $row['irrigation_unit'] = json_decode($row['irrigation_unit'], true);
             $row['irrigation_type'] = json_decode($row['irrigation_type'], true);
             $row['irrigation_on'] = json_decode($row['irrigation_on'], true);
             $row['editor_value'] = json_decode($row['editor_value'], true);
             $row['relay_value'] = json_decode($row['relay_value'], true);
-            if(!is_array($row['irrigation_on'])){
+            if (!is_array($row['irrigation_on'])) {
                 continue;
             }
             foreach ($row['irrigation_on'] as $sensorNum => $isOn) {
@@ -315,12 +360,17 @@ class Irrigation {
                     $sensorValue = $row['editor_value'][$sensorNum];
                     //如果未进行灌溉达到灌溉下限进行灌溉,否则在灌溉进程中
                     if ($row['relay_value'][$sensorNum] || $sensorValue < $irrigationMin) {
-                        $r=$this->{"smart" . $irrigationType}($row, $sensorNum);
-                        if($r){
-                            //占用该设备,跳过该设备控制
-                            $end=1;
-                            break;
-
+                        //在此插入开始信息
+						$r = $this->{"smart" . $irrigationType}($row, $sensorNum);
+                        while ($r) {
+                            $row['relay_value'][$sensorNum]=1;
+                            $r = $this->{"smart" . $irrigationType}($row, $sensorNum);
+                            if(!$r){
+                                $row['relay_value'][$sensorNum]=0;
+                            }
+                            //占用该设备,等待结束
+                            sleep(10);
+						//在此插入结束信息，作为一组；
                         }
                     }
 
@@ -336,7 +386,7 @@ class Irrigation {
 }
 
 $class = new Irrigation();
-while (True){
-    $class->run();
-    sleep(10);
-}
+$class->run();
+
+
+

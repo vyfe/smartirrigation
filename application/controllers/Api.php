@@ -52,11 +52,13 @@ class Api extends CI_Controller {
          */
         if ($deviceData =
             $this->db->get_where("device", array('device_id' => $deviceId, 'sign' => $sign))->result_array()
-        ) {
+        )
+            //从数据库中读取命令代码模板
+        {
             if (empty($commandId)) {
                 $commandTemplateData = $this->db->get_where("command_template", array('command_desc' => $setRelayStatus,
                     'device_template_id' => $deviceData[0]['device_template_id']))->result_array();
-                $commandId = $commandTemplateData['command_id'];
+                $commandId = $commandTemplateData['command_id'];//根据开关状态查询代码
 
             } else {
 
@@ -69,14 +71,14 @@ class Api extends CI_Controller {
                 $ret['msg'] = '无效命令ID';
                 goto render;
             }
-            $commandTemplateData = $commandTemplateData[0];
+            $commandTemplateData = $commandTemplateData[0];//只取第一行
             $this->db->insert("command_data", array(
                 'device_id' => $deviceId,
                 'command_id' => $commandTemplateData['command_id'],
                 'add_time' => time(),
                 'command_data' => $commandTemplateData['command_data'],
                 'response_data' => $commandTemplateData['response_data'],
-            ));
+            ));//在数据库中插入命令信息
             $this->send_command_to_redis($deviceId, $commandTemplateData['command_data']);
 
         } else {
@@ -109,7 +111,7 @@ class Api extends CI_Controller {
         if(empty($_POST['lastChangeTime'])){
             $ret['errno']=2;
             $ret['msg']="参数缺失";
-            render_json($ret);
+            render_json($ret);//传输到前端
         }
         $lastChangeTime=(int)$_POST['lastChangeTime'];
         $data=$this->db->get_where("device",array("user_id"=>$_SESSION['user_info']['user_id']))
