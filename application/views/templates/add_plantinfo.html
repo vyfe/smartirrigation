@@ -1,0 +1,190 @@
+<?php $this->load->view("templates/public/header.html");?>
+<!--Ver1.0 ,edited by Chenyifei ,Aug 26th,2016-->
+<div class="panel panel-default">
+    <div class="panel-heading">
+        智慧灌溉系统控制-添加作物种类
+    </div>
+    <div class = "panel-body">
+        <div class="row" style="margin-bottom: 12px;">
+            <div class="col-lg-6">
+                <div class="form-inline insert">
+                <span>
+                    <button class="btn btn-default " style="width: 100px; margin-right: 10px;" type="button"> 作物种类
+                    </button>
+                </span>
+                    <select class="form-control search" style="margin-right: 20px;" name="plant">
+                        <?php foreach($totaldata as $key=> $value):?>
+                        <option class = "insertjudge" value="<?=$value['plant_id']?>" <?php if($value['plant_id']==$data['plant_id']){echo "selected";}?>>
+                        <?=$value['name']?></option>
+                        <?php endforeach;?>
+                    </select><!--选择已有的作物种类或者新加入一种作物；-->
+                    <!--plantid为0时插入的部分
+                    <span class="input">
+                        <input class="data" name = "plantname" style="width: 150px; margin-right: 10px;" type="text" placeholder="在此输入作物名称…">
+                        </input>
+                    </span>
+                    -->
+                 </div>
+            </div>
+         </div>
+        <div class="row">
+            <table class=" table table-bordered">
+                <thead>
+                <th>生育期编号</th>
+                <th>生育期名称</th>
+                <th>起始月份</th>
+                <th>起始日期</th>
+                <th>结束月份</th>
+                <th>结束日期</th>
+                <th>区间内灌溉下限</th>
+                <th>生育期内Kc值</th>
+                </thead>
+                <tbody id = "insert">
+                <?php for($i=0;$i<$data['stagecount'];$i++){$j=$i+1;?><!--加入判断，若为新添加只显示一行，并附加一个增加行数的按钮-->
+                    <tr class = "stageNum" stage="<?=$j?>" plantid="<?=$data['plant_id']?>" style="font-size: medium">
+                        <td><div style="width: 80px; margin-right: 10px"><?=$j?></div></td>
+                        <td><input type="text" name = "stage_name" class="data" value="<?=$data['stage'.$j][4]?>" style="width: 80px; margin-right: 10px"></td>
+                        <div class = "rt"><td>
+                            <select name = "start_month" style="width: 50px; margin-right: 10px" class="data Change">
+                                <?php for($k=1;$k<13;$k++){?>
+                                <option value="<?=$k?>"
+                                    <?php if($k==$data['stage'.$j][0]){echo "selected";}?>><?=$k?>
+                                </option>
+                                <?php }?>
+                            </select>月
+                        </td>
+                        <td>
+                            <select name = "start_day" class="data Follow" style="width: 50px; margin-right: 10px">
+                                <?php $sel_mon=$data['stage'.$j][0];for($k=1;$k<$month[$sel_mon];$k++){?>
+                                <option value="<?=$k?>"
+                                <?php if($k==$data['stage'.$j][1]){echo "selected";}?>><?=$k?>
+                                </option>
+                                <?php }?>
+                            </select>日
+                        </td></div>
+                        <div class = "nd"><td><select name = "end_month" style="width: 50px; margin-right: 10px" class="data Change" >
+                            <?php for($k=1;$k<13;$k++){?>
+                            <option value="<?=$k?>"
+                            <?php if($k==$data['stage'.$j][2]){echo "selected";}?>><?=$k?>
+                            </option>
+                            <?php }?>月
+                        </select>
+                        </td>
+                        <td>
+                            <select name = "end_day" class="data Follow" style="width: 50px; margin-right: 10px">
+                                <?php $sel_mon=$data['stage'.$j][2];for($k=1;$k<$month[$sel_mon];$k++){?>
+                                <option value="<?=$k?>"
+                                <?php if($k==$data['stage'.$j][3]){echo "selected";}?>><?=$k?>
+                                </option>
+                                <?php }?>
+                            </select>日
+                        </td></div>
+                        <td title="旱地为‰，水田单位为mm"><div style="width: 90px; margin-right: 10px"><input type="text" name = "irrigation_min" class="data" value="<?=$data['stage'.$j][5]?>"></div></td>
+                        <td><input type="text" name = "kc_value" class="data" value="<?=$data['stage'.$j][6]?>" style="width: 50px; margin-right: 10px"></td>
+                    </tr><?php }?>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td colspan="7" align="center">
+                            <button class="btn btn-success submit" plantid = "<?=$data['plant_id']?>" style="width: 100px; margin-right: 10px" type="button"> 提交数据</button>
+                            <button class="btn btn-info add" plantid = "<?=$data['plant_id']?>" style="width: 100px; margin-right: 10px" type="button"> 添加阶段…</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(".add").click(function(){
+        var i = $(".stageNum").length;
+        i++;
+        if(i > 10){alert("生育期过多，不允许再添加！");return;}
+        var j = $(this).attr("plantid");
+        var txt ="";
+        txt += "<tr class = \"stageNum\" stage=\""+ i + "\" plantid=\""+ j + "\" style=\"font-size: medium\">\
+        <td><div style=\"width: 80px; margin-right: 10px\">" + i +"</div></td>\
+        <td><input type=\"text\" value = \"生育期"+ i +"\" name = \"stage_name\" class=\"data\" value=\"\" style=\"width: 80px; margin-right: 10px\"></td>\
+        <div class = \"rt\"><td><select style=\"width: 50px; margin-right: 10px\" name = \"start_month\" class=\"data Change\" >";
+        for(var k = 1;k<13;k++){
+            txt += "<option value=\""+ k +"\">" + k + "</option>";
+        }
+        txt += "</select>月</td>\
+        <td><select style=\"width: 50px; margin-right: 10px\" name = \"start_day\" class=\"data Follow\" >";
+        for(var k2 = 1;k2<32;k2++){
+            txt += "<option value=\""+ k2 +"\">" + k2 + "</option>";
+        }
+        txt += "</select>日</td></div>\
+        <div class = \"nd\"><td><select style=\"width: 50px; margin-right: 10px\" name = \"end_month\" class=\"data Change\" >";
+        for(var k3 = 1;k3<13;k3++){
+            txt += "<option value=\""+k3+"\">" + k3 + "</option>";
+        }
+        txt += "</select>月</td>\
+        <td><select style=\"width: 50px; margin-right: 10px\" name = \"end_day\" class=\"data Follow\" >";
+        for(var k4 = 1;k4<32;k4++){
+            txt += "<option value=\""+ k4 +"\">" + k4 + "</option>";
+        }
+        txt += "</select>日</td></div>\
+        <td title=\"旱地为‰，水田单位为mm\"><div style=\"width: 90px; margin-right: 10px\"><input type=\"text\" name = \"irrigation_min\" class=\"data\" value=\"\"></div></td>\
+        <td><input type=\"text\" name = \"kc_value\" class=\"data\" value=\"<?=$data['stage'.$j][6]?>\" style=\"width: 50px; margin-right: 10px\"></td>\
+        </tr>";
+        $("#insert").append(txt);
+
+    });
+    $(".submit").click(function () {
+        var param = new Object();
+        var plantid = $(this).attr("plantid");
+        param['plantid'] = plantid;
+        if($(".search").val() == 0){
+        var plantname = $(".plantname").val();
+        param['name']=plantname;
+        }
+        $("tr.stageNum").each(function () {
+            var stageNum = $(this).attr("stage");
+            //param[stageNum] = new Array();
+            $(this).find(".data").each(function () {
+                var t = $(this).attr("name");
+                var r = $(this).val();
+                param[stageNum + t] = r;
+                var test = param;
+            })
+        });
+        var i = $(".stageNum").length;
+        param['stagecount'] = i;
+        var kit = new Kit();
+        kit.query("/device/plant_update", param, callback)
+
+    });
+    function callback(data) {
+        alert(data.msg);
+        window.location.reload();
+
+    };
+    $(document).ready(function() {
+    var a = $(".search").val();
+        if(a == 0){
+            var txt = "<span class=\"input\" >\
+                <input class=\"data plantname\" style=\"width: 150px; margin-right: 50px;\" type=\"text\" placeholder=\"在此输入作物名称…\">\
+                </input>\
+            </span>";
+            $(".insert").append(txt);
+        }
+
+    });
+
+    $(".stageNum").on("change",".Change",function () {
+            var month = [0, 32, 29, 32, 31, 32, 31, 32, 32, 31, 32, 31, 32];
+            var month_selected = $(this).val();
+            $(this).parent().parent().find(".Follow").empty();
+            var txt = "";
+            for (var k2 = 1; k2 < month[month_selected]; k2++) {
+                txt += "<option value=\"" + k2 + "\">" + k2 + "</option>";
+            }
+            $(this).parent().parent().find(".Follow").append(txt);
+        });
+    $(".search").change(function () {
+        var plant_id = $(".search").val();
+        window.location.href = "/device/add_plantinfo?plant_id=" + plant_id
+    });
+</script>
+<?php $this->load->view("templates/public/footer.html");?>

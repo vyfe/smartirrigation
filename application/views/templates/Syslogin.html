@@ -1,0 +1,58 @@
+<?php $this->load->view("templates/public/header.html");?>
+<link href="../../../public/css/timeline.css" rel="stylesheet" type="text/css" />
+<link href="../../../public/css/main.css" rel="stylesheet" type="text/css" />
+<link href="../../../public/lib/font-awesome/css/font-awesome.css" rel="stylesheet" type="text/css" />
+<link href="../../../public/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" type="text/css" />
+<link href="../../../public/lib/metisMenu/dist/metisMenu.css" rel="stylesheet" type="text/css" />
+<link href="../../../public/lib/jquery.dtGrid/jquery.dtGrid.css" rel="stylesheet" type="text/css" />
+<style><!-- 重写样式 -->
+.i{}<!-- 第一行失效？什么毛病-->
+
+i{
+	position:relative;
+	top:2px;
+}
+.panel-title{font-size:14px;margin-left:5px;}
+.panel-heading{padding:15px;background-color:#cccccc}
+.panel{border-radius:0px;}
+.btn-block{
+	width:45%;
+	}
+.floatright{float:right}
+</style>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 col-md-offset-4">
+            <div class="login-panel panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">稻田水分信息化管理系统登录<i class="fa fa-cloud pull-right" style="color:#5cb85c"></i></h4>                    
+                </div>
+                <div class="panel-body">
+                    <div class="error-info">
+                        <?php echo validation_errors() ?>
+                    </div>
+                    <?php echo form_open("user/postLogin")?>
+                        <fieldset>
+                            <div class="form-group">
+                                <input class="form-control" placeholder="用户名" name="user_name" type="text" value="" autofocus>
+                            </div>
+                            <div class="form-group">
+                                <input class="form-control" placeholder="密码" name="password" type="password" value="">
+                            </div>
+
+                            <!-- Change this to a button or input when using this as a form -->
+                            <div>
+                            <button type="submit" class="btn btn-lg btn-success btn-block floatright">登录</button>
+                            <a href="user/sign" class="btn btn-lg btn-primary btn-block ">注册</a>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<?php $this->load->view("templates/public/footer.html");?>
