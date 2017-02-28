@@ -13,4 +13,10 @@ class User_model extends CI_Model {
         $this->db->limit(1);
         return $this->db->get("user")->result_array();
     }
+    public function get_access($user_name){
+        $this->db->select(array('user_id','access'));
+        $this->db->where(array('user_name' => $user_name,));
+        $this->db->limit(1);
+        return $this->db->get("user")->result_array();
+    } 
 }

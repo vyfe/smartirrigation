@@ -29,7 +29,8 @@ class User extends CI_Controller {
             redirect("/Console");
     }
 
-    public function postLogin() {
+    public function postLogin()
+    {
 
         $config = array(
             array(
@@ -48,6 +49,14 @@ class User extends CI_Controller {
                     'required' => '请输入密码',
                 ),
             ),
+            array(
+                'field' => 'page_name',
+                'label' => 'Pagename',
+                'rules' => 'required|trim|callback_access',
+                'errors' => array(
+                    'required' => '系统错误，请再试',
+                ),
+            ),
         );
         $this->form_validation->set_rules($config);
         $this->form_validation->set_error_delimiters("<div>", "</div>");
@@ -56,6 +65,9 @@ class User extends CI_Controller {
         } else {
             $ret = $this->user_model->get_user_info($_POST['user_name'], $_POST['password']);
             $user_info = $ret[0];
+            $page_name = $_POST['page_name'];
+            switch ($page_name){
+                case "Login":
             $this->session->set_userdata("user_info", $user_info);
             if ($this->session->userdata('redirect')) {
                 $redirect = $this->session->userdata('redirect');
@@ -64,7 +76,27 @@ class User extends CI_Controller {
             } else {
                 redirect("/console");
             }
+                    break;
+                case "Syslogin":
+                    $this->session->set_userdata("user_info", $user_info);
+                    redirect("/console");
+                    break;
         }
+    }
+    }
+    public function access(){
+        $result = $this->user_model->get_access($_POST['user_name']);
+        $result = $result[0];
+        $name = $_POST['page_name'];
+        switch($result['access']){
+            case 1:
+                if($_POST['page_name'] == "Syslogin"){return true;}
+            case 0:
+                if($_POST['page_name'] == "login"){return true;}
+                break;
+        }
+        $this->form_validation->set_message('access', '权限不足，请联系鹳狸猿');
+        return false;
     }
 
     public function validate() {
@@ -72,7 +104,6 @@ class User extends CI_Controller {
             return true;
         } else {
             $this->form_validation->set_message('validate', '密码错误');
-
             return false;
         }
     }

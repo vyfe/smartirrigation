@@ -18,7 +18,9 @@
                             <div class="form-group">
                                 <input class="form-control" placeholder="密码" name="password" type="password" value="">
                             </div>
-
+                            <div class="form-group">
+                                <input class="hidden" name="page_name" type="text" value="<?php echo $this->uri->rsegment(2,'0')?>">
+                            </div>
                             <!-- Change this to a button or input when using this as a form -->
                             <button type="submit" class="btn btn-lg btn-success btn-block">登录</button>
                         </fieldset>
