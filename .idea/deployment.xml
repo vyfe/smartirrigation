@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="wplocal">
+  <component name="PublishConfigData" serverName="wplocal" uploadOnCheckin="8a903382-5850-46a8-8689-e0f63dbc33df">
     <serverData>
       <paths name="smart">
         <serverdata>
@@ -17,5 +17,6 @@
         </serverdata>
       </paths>
     </serverData>
+    <option name="myUploadOnCheckinName" value="smart" />
   </component>
 </project>
