@@ -12,7 +12,11 @@ class User extends CI_Controller {
     }
 
     public function login() {
-        $this->load->view("templates/login.html");
+        if(!$_SESSION['user_info']){
+            $this->load->view("templates/login.html");
+        }
+        /*闲得无聊，把登陆后还能进login的Bug改一下*/
+        redirect("/Console");
     }
     public function Syslogin() {
         $this->load->view("templates/Syslogin.html");
@@ -46,6 +50,9 @@ class User extends CI_Controller {
             $ret = $this->user_model->get_user_info($_POST['user_name'], $_POST['password']);
             $user_info = $ret[0];
             $this->session->set_userdata("user_info", $user_info);
+            if (int($this->session->userdata('access')) > 0) {
+                redirect("/Sysconsole");
+            }
             if ($this->session->userdata('redirect')) {
                 $redirect = $this->session->userdata('redirect');
                 $this->session->unset_userdata('redirect');
