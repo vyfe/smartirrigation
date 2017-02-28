@@ -12,8 +12,14 @@ class User extends CI_Controller {
     }
 
     public function login() {
-        $this->load->view("templates/login.html");
+        if(!$_SESSION['user_info']){
+            $this->load->view("templates/login.html");
+        }
+        /*闲得无聊，把登陆后还能进login的Bug改一下*/
+        else
+            redirect("/Console");
     }
+
     public function Syslogin() {
         $this->load->view("templates/Syslogin.html");
     }
